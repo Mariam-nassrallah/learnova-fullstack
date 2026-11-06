@@ -1,10 +1,14 @@
 // ===== Learnova - small interactions =====
 
-// 1. Navbar gets darker when you scroll
-const navbar = document.querySelector(".navbar");
-window.addEventListener("scroll", () => {
-  navbar.classList.toggle("scrolled", window.scrollY > 40);
-});
+// 1. Mobile menu: close it after a link (or the cart button) inside it is clicked
+const mainNav = document.getElementById("mainNav");
+if (mainNav && window.bootstrap) {
+  mainNav.querySelectorAll("a, button").forEach((item) => {
+    item.addEventListener("click", () => {
+      if (mainNav.classList.contains("show")) bootstrap.Collapse.getOrCreateInstance(mainNav, { toggle: false }).hide();
+    });
+  });
+}
 
 // 2. Reveal elements when they scroll into view
 const revealObserver = new IntersectionObserver((entries) => {

@@ -3,9 +3,9 @@
    (loaded after style.css, reuses its variables)
    ========================================= */
 
-/* Section links (#catalog, #register...) stop below the fixed navbar */
+/* Section links (#catalog, #register...) stop just above the section */
 html { scroll-behavior: smooth; }
-.anchor, [id] { scroll-margin-top: 110px; }
+.anchor, [id] { scroll-margin-top: 16px; }
 
 /* ---------- Navbar cart button ---------- */
 .cart-btn { display: inline-flex; align-items: center; gap: 8px; }
