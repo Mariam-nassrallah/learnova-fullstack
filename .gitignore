@@ -1,0 +1,5 @@
+node_modules/
+admin/dist/
+server/data/db.json
+server/data/*.tmp
+server/data/*.broken

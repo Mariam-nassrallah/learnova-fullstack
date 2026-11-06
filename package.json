@@ -1,0 +1,13 @@
+{
+  "name": "learnova",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Learnova: course website, Express API and React admin dashboard",
+  "scripts": {
+    "setup": "npm install --prefix server && npm install --prefix admin && npm run build --prefix admin",
+    "start": "npm start --prefix server",
+    "dev:server": "npm run dev --prefix server",
+    "dev:admin": "npm run dev --prefix admin",
+    "build": "npm run build --prefix admin"
+  }
+}

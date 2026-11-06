@@ -322,3 +322,32 @@ footer a:hover { color: #fff; }
 .hero, .page-header, section { overflow-x: clip; }
 .chip-2 { bottom: -28px; left: -30px; }
 .page-header, .hero { position: relative; }
+
+/* Small "Admin" link in the footer */
+.admin-link { color: var(--muted); }
+.admin-link:hover { color: var(--cyan); }
+
+/* ===== Navbar login icon ===== */
+.nav-login {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 42px; height: 42px; margin-right: 10px; flex-shrink: 0;
+  border-radius: 50%; background: var(--glass); border: 1px solid var(--glass-border);
+  color: var(--text); font-size: 1.3rem; text-decoration: none;
+  backdrop-filter: blur(10px); transition: 0.3s;
+}
+.nav-login:hover, .nav-login:focus-visible {
+  color: #fff; border-color: var(--violet); background: rgba(139, 92, 246, 0.15);
+  box-shadow: 0 0 22px rgba(139, 92, 246, 0.55); transform: translateY(-2px);
+}
+.nav-login-text { display: none; }
+
+/* Collapsed menu: a normal "Login" link with the icon */
+@media (max-width: 991.98px) {
+  .nav-login {
+    width: 100%; height: auto; justify-content: flex-start; gap: 10px;
+    margin: 6px 0 12px; padding: 10px 14px; border-radius: 12px; font-size: 1rem; font-weight: 500;
+  }
+  .nav-login:hover { transform: none; }
+  .nav-login i { font-size: 1.25rem; }
+  .nav-login-text { display: inline; }
+}
