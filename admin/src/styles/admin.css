@@ -29,7 +29,7 @@
   --panel: #FFFFFF;
   --panel-2: #FDF8FB;
   --sidebar: #FFFFFF;
-  --topbar: rgba(251, 246, 249, 0.88);
+  --topbar: #FBF6F9;
   --border: #F0E2EA;
   --border-strong: #E6C9DA;
   --text: #4A2D4E;
@@ -84,7 +84,7 @@
   --panel: #1C1220;
   --panel-2: #24182A;
   --sidebar: #170E1A;
-  --topbar: rgba(18, 11, 20, 0.85);
+  --topbar: #120B14;
   --border: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(214, 168, 196, 0.3);
   --text: #F3E8F0;
@@ -269,8 +269,8 @@ code { color: var(--code); }
 
 .admin-main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
 .topbar {
-  position: sticky; top: 0; z-index: 1020; display: flex; align-items: center; gap: 12px;
-  padding: 14px 28px; background: var(--topbar); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);
+  position: relative; z-index: 1020; display: flex; align-items: center; gap: 12px;
+  padding: 14px 28px; background: var(--topbar); border-bottom: 1px solid var(--border);
 }
 .page-title { font-size: 1.35rem; margin: 0; }
 .page-subtitle { font-size: 0.82rem; color: var(--muted); margin: 0; }
