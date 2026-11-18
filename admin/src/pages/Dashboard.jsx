@@ -4,7 +4,7 @@
 //   2. Stat cards (count-up)
 //   3. Bar chart: registrations in the last 7 days (CSS bars)
 //   4. Donut: registration status (CSS conic-gradient)
-//   5. Recent registrations + popular courses
+//   5. Recent registrations (ResponsiveTable) + popular courses
 // No chart library: everything is HTML + CSS.
 // =====================================================
 import { useEffect, useState } from "react";
@@ -12,6 +12,7 @@ import { Link, useOutletContext } from "react-router-dom";
 import { api } from "../api.js";
 import { useToast } from "../context/ToastContext.jsx";
 import { Avatar, CourseIcon, EmptyState, Loading, StatCard, StatusBadge } from "../components/ui.jsx";
+import ResponsiveTable from "../components/ResponsiveTable.jsx";
 import { formatDate, money } from "../utils.js";
 
 // Same meaning as the status badges (amber / green / red); the CSS variables
@@ -133,28 +134,24 @@ export default function Dashboard() {
             {stats.recent.length === 0 ? (
               <EmptyState icon="bi-inbox" title="No registrations yet" text="New registrations from the website will show up here." />
             ) : (
-              <div className="table-responsive">
-                <table className="table admin-table align-middle mb-0">
-                  <thead><tr><th>ID</th><th>Student</th><th>Course(s)</th><th>Date</th><th className="text-end">Total</th><th>Status</th></tr></thead>
-                  <tbody>
-                    {stats.recent.map((r) => (
-                      <tr key={r.id}>
-                        <td><code>{r.id}</code></td>
-                        <td>
-                          <div className="d-flex align-items-center gap-2">
-                            <Avatar name={r.name} size={32} />
-                            <span className="text-nowrap">{r.name}</span>
-                          </div>
-                        </td>
-                        <td className="small">{r.courses.map((c) => c.title).join(", ")}</td>
-                        <td className="text-nowrap small">{formatDate(r.date)}</td>
-                        <td className="text-end fw-semibold">{money(r.total)}</td>
-                        <td><StatusBadge status={r.status} /></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <ResponsiveTable
+                label="Recent registrations"
+                rows={stats.recent}
+                rowKey={(r) => r.id}
+                columns={[
+                  { key: "id", label: "ID", hide: "xxl", nowrap: true, render: (r) => <code>{r.id}</code> },
+                  { key: "student", label: "Student", card: "title", render: (r) => (
+                    <div className="d-flex align-items-center gap-2">
+                      <Avatar name={r.name} size={32} />
+                      <span className="fw-medium min-w-0">{r.name}</span>
+                    </div>
+                  ) },
+                  { key: "courses", label: "Course(s)", className: "small", render: (r) => r.courses.map((c) => c.title).join(", ") },
+                  { key: "date", label: "Date", nowrap: true, className: "small", render: (r) => formatDate(r.date) },
+                  { key: "total", label: "Total", align: "end", nowrap: true, className: "fw-semibold", render: (r) => money(r.total) },
+                  { key: "status", label: "Status", card: "status", render: (r) => <StatusBadge status={r.status} /> },
+                ]}
+              />
             )}
           </div>
         </div>

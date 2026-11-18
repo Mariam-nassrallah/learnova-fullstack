@@ -4,13 +4,14 @@
 //   2. Search + filters
 //   3. Add / edit (CourseForm modal)
 //   4. Delete (blocked if the course has registrations)
-//   5. Table
+//   5. Table (ResponsiveTable: cards on phones)
 // =====================================================
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { api } from "../api.js";
 import { useToast } from "../context/ToastContext.jsx";
 import CourseForm from "../components/CourseForm.jsx";
+import ResponsiveTable from "../components/ResponsiveTable.jsx";
 import { CourseIcon, EmptyState, Loading, SearchInput, StatusBadge } from "../components/ui.jsx";
 import { CATEGORIES, COURSE_STATUSES, LEVELS } from "../constants.js";
 import { money, schedule } from "../utils.js";
@@ -126,51 +127,45 @@ export default function Courses() {
             : <button type="button" className="btn btn-primary-grad btn-sm" onClick={openAdd}><i className="bi bi-plus-lg"></i> Add course</button>}
         </EmptyState>
       ) : (
-        <div className="table-responsive">
-          <table className="table admin-table align-middle mb-0">
-            <thead>
-              <tr>
-                <th>Course</th><th>Category</th><th>Level</th><th>Duration</th>
-                <th className="text-end">Price</th><th>Enrolled</th><th>Status</th><th className="text-end">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visible.map((c) => {
-                const percent = c.seats ? Math.min(100, Math.round((c.enrolled / c.seats) * 100)) : 100;
-                return (
-                  <tr key={c.id}>
-                    <td style={{ minWidth: 260 }}>
-                      <div className="d-flex align-items-center gap-3">
-                        <CourseIcon course={c} />
-                        <div className="min-w-0">
-                          <div className="fw-semibold">{c.title}</div>
-                          <div className="small text-muted-c">{c.instructor} · {schedule(c)}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td><span className="cat-badge">{c.category}</span></td>
-                    <td className="small">{c.level}</td>
-                    <td className="small text-nowrap">{c.duration} h</td>
-                    <td className="text-end fw-semibold">{money(c.price)}</td>
-                    <td style={{ minWidth: 110 }}>
-                      <div className="small"><b>{c.enrolled}</b><span className="text-muted-c"> / {c.seats}</span></div>
-                      <div className={`progress-thin mt-1 ${percent >= 100 ? "full" : ""}`}><div style={{ width: `${percent}%` }}></div></div>
-                    </td>
-                    <td><StatusBadge status={c.status} /></td>
-                    <td className="text-end text-nowrap">
-                      <button type="button" className="icon-btn sm" title="Edit" aria-label={`Edit ${c.title}`} onClick={() => openEdit(c)}>
-                        <i className="bi bi-pencil"></i>
-                      </button>
-                      <button type="button" className="icon-btn sm danger" title="Delete" aria-label={`Delete ${c.title}`} onClick={() => handleDelete(c)}>
-                        <i className="bi bi-trash3"></i>
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <ResponsiveTable
+          label="Courses"
+          rows={visible}
+          rowKey={(c) => c.id}
+          actionsLabel="Actions"
+          columns={[
+            { key: "course", label: "Course", card: "title", render: (c) => (
+              <div className="d-flex align-items-center gap-3">
+                <CourseIcon course={c} />
+                <div className="min-w-0">
+                  <div className="fw-semibold">{c.title}</div>
+                  <div className="small text-muted-c">
+                    {c.instructor} · {schedule(c)}
+                    {/* tablet + small desktop: the hidden columns move up here */}
+                    <span className="d-none d-md-inline d-xl-none"> · {c.category} · {c.level} · {c.duration} h</span>
+                  </div>
+                </div>
+              </div>
+            ) },
+            { key: "category", label: "Category", hide: "xl", render: (c) => <span className="cat-badge">{c.category}</span> },
+            { key: "level", label: "Level", hide: "xl", className: "small", render: (c) => c.level },
+            { key: "duration", label: "Duration", hide: "xl", nowrap: true, className: "small", render: (c) => `${c.duration} h` },
+            { key: "price", label: "Price", align: "end", nowrap: true, className: "fw-semibold", render: (c) => money(c.price) },
+            { key: "enrolled", label: "Enrolled", className: "rt-enrolled", render: (c) => {
+              const percent = c.seats ? Math.min(100, Math.round((c.enrolled / c.seats) * 100)) : 100;
+              return (
+                <>
+                  <div className="small"><b>{c.enrolled}</b><span className="text-muted-c"> / {c.seats}</span></div>
+                  <div className={`progress-thin mt-1 ${percent >= 100 ? "full" : ""}`}><div style={{ width: `${percent}%` }}></div></div>
+                </>
+              );
+            } },
+            { key: "status", label: "Status", card: "status", render: (c) => <StatusBadge status={c.status} /> },
+          ]}
+          actions={(c) => [
+            { icon: "bi-pencil", label: "Edit", ariaLabel: `Edit ${c.title}`, onClick: () => openEdit(c) },
+            { icon: "bi-trash3", label: "Delete", ariaLabel: `Delete ${c.title}`, danger: true, onClick: () => handleDelete(c) },
+          ]}
+        />
       )}
 
       <CourseForm show={formOpen} course={editing} courses={courses} onClose={() => setFormOpen(false)} onSaved={handleSaved} />

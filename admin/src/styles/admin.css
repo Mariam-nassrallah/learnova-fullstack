@@ -10,7 +10,10 @@
      4. Panels, stat cards, tables, badges
      5. Charts (bars + donut)
      6. Modals, toasts, login
-     7. Responsive
+     7. Responsive table (ResponsiveTable component)
+     8. Responsive
+   Nothing may scroll sideways on any screen: the page only
+   scrolls vertically (see "No sideways scroll" in section 1).
    ===================================================== */
 
 /* 1. Theme variables + base ---------------------------- */
@@ -143,6 +146,11 @@ body {
   background: var(--bg); color: var(--text); font-family: "Space Grotesk", system-ui, sans-serif;
   transition: var(--theme-transition);
 }
+/* No sideways scroll: anything that is still too wide gets clipped
+   instead of making the whole page scroll horizontally */
+html, body { overflow-x: clip; max-width: 100%; }
+img, svg, video, canvas, iframe, table, pre, select, input, textarea { max-width: 100%; }
+.row > *, .panel, .modal-dialog, .modal-content { max-width: 100%; min-width: 0; }
 h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
 a { color: var(--primary); text-decoration: none; }
 a:hover { color: var(--primary-hover); }
@@ -209,7 +217,7 @@ code { color: var(--code); }
 .input-group > .form-control:not(:last-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
 
 /* Search box with an icon inside */
-.search-input { position: relative; flex: 2 1 240px; }
+.search-input { position: relative; flex: 2 1 240px; min-width: 0; }
 .search-input i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
 .search-input .form-control { padding-left: 40px; }
 
@@ -267,13 +275,13 @@ code { color: var(--code); }
 .tip-card i { color: var(--ic3); font-size: 1.1rem; }
 .tip-card p { color: var(--muted); margin-top: 2px; }
 
-.admin-main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+.admin-main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; min-width: 0; }
 .topbar {
   position: relative; z-index: 1020; display: flex; align-items: center; gap: 12px;
   padding: 14px 28px; background: var(--topbar); border-bottom: 1px solid var(--border);
 }
-.page-title { font-size: 1.35rem; margin: 0; }
-.page-subtitle { font-size: 0.82rem; color: var(--muted); margin: 0; }
+.page-title { font-size: 1.35rem; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.page-subtitle { font-size: 0.82rem; color: var(--muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .icon-btn {
   display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; flex-shrink: 0;
   border-radius: 12px; background: var(--panel); border: 1px solid var(--border); color: var(--text); font-size: 1.15rem;
@@ -315,7 +323,7 @@ code { color: var(--code); }
 .menu-item:hover { background: var(--hover); color: var(--primary); }
 .menu-item.text-danger-c:hover { background: var(--bad-bg); }
 
-.admin-content { padding: 28px; flex-grow: 1; }
+.admin-content { padding: 28px; flex-grow: 1; min-width: 0; }
 .admin-footer {
   display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
   padding: 18px 28px; font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--border);
@@ -327,7 +335,8 @@ code { color: var(--code); }
   background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px;
   box-shadow: var(--shadow);
 }
-.panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+.panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+.panel-head > * { min-width: 0; }
 .panel-title { font-size: 1.05rem; margin: 0; }
 .panel-sub { font-size: 0.8rem; color: var(--muted); margin: 2px 0 0; }
 
@@ -341,7 +350,8 @@ code { color: var(--code); }
 .c-cyan { background: var(--ic2-bg); color: var(--ic2); }
 .c-pink { background: var(--ic3-bg); color: var(--ic3); }
 .c-green { background: var(--ic4-bg); color: var(--ic4); }
-.stat-label { font-size: 0.8rem; color: var(--muted); }
+.stat-text { min-width: 0; }
+.stat-label { font-size: 0.8rem; color: var(--muted); overflow-wrap: anywhere; }
 .stat-value { font-size: 1.9rem; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--text); }
 .stat-hint { font-size: 0.75rem; color: var(--muted); }
 
@@ -352,7 +362,7 @@ code { color: var(--code); }
 .info-banner > i { color: var(--primary); font-size: 1.3rem; }
 
 .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
-.filters .form-select { flex: 1 1 160px; width: auto; }
+.filters .form-select { flex: 1 1 160px; width: auto; min-width: 0; text-overflow: ellipsis; }
 
 .admin-table { --bs-table-bg: transparent; --bs-table-color: var(--text); --bs-table-border-color: var(--border); --bs-table-hover-bg: var(--row-hover); }
 .admin-table th {
@@ -362,7 +372,7 @@ code { color: var(--code); }
 .admin-table thead th { background: var(--table-head); }
 .admin-table thead th:first-child { border-top-left-radius: 10px; }
 .admin-table thead th:last-child { border-top-right-radius: 10px; }
-.admin-table td { font-size: 0.9rem; padding-top: 12px; padding-bottom: 12px; }
+.admin-table td { font-size: 0.9rem; padding-top: 12px; padding-bottom: 12px; overflow-wrap: break-word; }
 .admin-table tbody tr:hover > * { background: var(--row-hover); }
 .admin-table tbody tr:last-child td { border-bottom: 0; }
 
@@ -388,7 +398,7 @@ code { color: var(--code); }
 .status-select option { color: var(--text); background: var(--panel); }
 
 .cat-badge, .chip {
-  display: inline-block; font-size: 0.75rem; padding: 3px 10px; border-radius: 30px; white-space: nowrap;
+  display: inline-block; max-width: 100%; font-size: 0.75rem; padding: 3px 10px; border-radius: 30px; overflow-wrap: break-word;
   background: var(--chip-bg); color: var(--chip-text); border: 1px solid var(--chip-border); margin: 2px 4px 2px 0;
 }
 
@@ -423,14 +433,15 @@ code { color: var(--code); }
 
 .info-box { background: var(--panel-2); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; height: 100%; }
 .info-box h6, .section-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary); margin-bottom: 10px; }
-.info-box > div { padding: 3px 0; font-size: 0.9rem; }
+.info-box > div { padding: 3px 0; font-size: 0.9rem; gap: 12px; overflow-wrap: anywhere; }
+.info-box > .d-flex > :last-child { text-align: end; }
 .info-box i { color: var(--primary); margin-right: 6px; }
 .info-box hr { border-color: var(--border); margin: 10px 0; opacity: 1; }
 
 
 /* 5. Charts -------------------------------------------- */
 .bar-chart { display: flex; align-items: flex-end; gap: 12px; height: 240px; padding-top: 10px; }
-.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
+.bar-col { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; height: 100%; }
 .bar-value { font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; }
 .bar-track {
   flex-grow: 1; width: 100%; max-width: 54px; display: flex; align-items: flex-end;
@@ -510,7 +521,34 @@ code { color: var(--code); }
 .demo-box { padding: 14px; border-radius: 14px; background: var(--panel-2); border: 1px dashed var(--border-strong); }
 
 
-/* 7. Responsive ---------------------------------------- */
+/* 7. Responsive table ----------------------------------- */
+/* Table (768px and up): fits its panel, long text wraps */
+.rt-table-wrap { width: 100%; }
+.rt-table-wrap .admin-table { width: 100%; }
+.admin-table td.rt-enrolled { min-width: 96px; }
+.admin-table td.rt-person { min-width: 220px; }   /* name + email: normal emails stay on one line */
+.rt-actions .icon-btn.sm:first-child, .rt-actions .btn:first-child { margin-left: 0; }
+.rt-actions .btn + .btn, .rt-actions .icon-btn + .icon-btn { margin-left: 4px; }
+
+/* Cards (under 768px): one card per row */
+.rt-cards { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.rt-card {
+  min-width: 0; padding: 14px; border-radius: 14px; overflow-wrap: anywhere;
+  background: var(--panel-2); border: 1px solid var(--border); transition: var(--theme-transition);
+}
+.rt-card-title { min-width: 0; margin-bottom: 10px; }
+.rt-fields { margin: 0; display: grid; gap: 6px; font-size: 0.88rem; }
+.rt-field { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; min-width: 0; }
+.rt-field dt { font-weight: 500; color: var(--muted); }
+.rt-field dd { margin: 0; min-width: 0; color: var(--text); }
+.rt-field dd .progress-thin { width: 100%; min-width: 120px; }
+.rt-card-status { margin-top: 10px; }
+.rt-card-status .status-select { width: 100%; }
+.rt-card-actions { display: flex; gap: 8px; margin-top: 12px; }
+.rt-card-actions .btn { flex: 1 1 0; min-width: 0; }
+
+
+/* 8. Responsive ---------------------------------------- */
 @media (max-width: 991.98px) {
   .sidebar { transform: translateX(-100%); transition: transform 0.28s ease, var(--theme-transition); box-shadow: none; }
   .sidebar.open { transform: none; box-shadow: var(--shadow-pop); }
@@ -520,15 +558,28 @@ code { color: var(--code); }
   .admin-content { padding: 20px 16px; }
   .admin-footer { padding: 16px; }
 }
+/* Phones + small tablets: search, filters and buttons full width, form fields stacked */
+@media (max-width: 767.98px) {
+  .filters { flex-direction: column; }
+  .filters > *, .filters .form-select { flex: 1 1 auto; width: 100%; }
+  .panel-head > div { flex: 1 1 100%; }
+  .panel-head .btn { width: 100%; }
+  .status-pills .status-pill { flex: 1 1 auto; justify-content: center; }
+  .modal-footer > .btn, .modal-footer > a.btn { flex: 1 1 auto; }
+  .modal-footer > .me-auto { margin-right: 0 !important; }
+  .info-banner .btn { width: 100%; }
+}
 @media (max-width: 575.98px) {
+  .topbar { gap: 8px; padding: 10px 12px; }
+  .admin-content { padding: 16px 12px; }
   .panel { padding: 16px; }
-  .stat-card { padding: 14px; gap: 12px; }
+  .modal-dialog { margin: 0.5rem; max-width: none; }
+  .stat-card { padding: 14px; gap: 10px; flex-direction: column; align-items: flex-start; }
   .stat-icon { width: 42px; height: 42px; font-size: 1.15rem; }
   .stat-value { font-size: 1.5rem; }
   .bar-chart { gap: 6px; height: 200px; }
   .page-title { font-size: 1.15rem; }
   .login-card { padding: 24px 20px; }
-  .panel-head .btn { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

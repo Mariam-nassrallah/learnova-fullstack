@@ -68,7 +68,8 @@ learnova/
 │   └── src/
 │       ├── api.js           fetch helper (token, errors, 401 -> login)
 │       ├── context/         AuthContext, ToastContext
-│       ├── components/      Layout, Modal, CourseForm, ui (badges, avatar, cards...)
+│       ├── components/      Layout, Modal, CourseForm, ResponsiveTable, ui (badges, avatar, cards...)
+│                            (see admin/COMPONENTS.md)
 │       ├── pages/           Login, Dashboard, Courses, Students, Registrations
 │       └── styles/admin.css
 ├── package.json             root scripts

@@ -4,13 +4,14 @@
 //   2. Stat cards
 //   3. Search + filters (course, date, occupation)
 //   4. CSV export of the filtered list
-//   5. Table + details modal
+//   5. Table (cards on phones) + details modal
 // =====================================================
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useOutletContext } from "react-router-dom";
 import { api } from "../api.js";
 import { useToast } from "../context/ToastContext.jsx";
 import Modal from "../components/Modal.jsx";
+import ResponsiveTable from "../components/ResponsiveTable.jsx";
 import { Avatar, EmptyState, Loading, SearchInput, StatCard, StatusBadge } from "../components/ui.jsx";
 import { daysAgo, downloadCSV, formatDate, money } from "../utils.js";
 
@@ -90,9 +91,9 @@ export default function Students() {
   return (
     <>
       <div className="row g-3 g-xl-4 mb-4">
-        <div className="col-sm-4"><StatCard icon="bi-people" label="Students" value={students.length} color="violet" /></div>
-        <div className="col-sm-4"><StatCard icon="bi-person-plus" label="New this week" value={newThisWeek} color="cyan" /></div>
-        <div className="col-sm-4"><StatCard icon="bi-collection" label="In 2+ courses" value={multiCourse} color="pink" /></div>
+        <div className="col-6 col-md-4"><StatCard icon="bi-people" label="Students" value={students.length} color="violet" /></div>
+        <div className="col-6 col-md-4"><StatCard icon="bi-person-plus" label="New this week" value={newThisWeek} color="cyan" /></div>
+        <div className="col-6 col-md-4"><StatCard icon="bi-collection" label="In 2+ courses" value={multiCourse} color="pink" /></div>
       </div>
 
       <div className="panel">
@@ -132,32 +133,30 @@ export default function Students() {
             </EmptyState>
           )
         ) : (
-          <div className="table-responsive">
-            <table className="table admin-table align-middle mb-0">
-              <thead><tr><th>Student</th><th>Phone</th><th>Course(s)</th><th>Last registration</th><th className="text-end"></th></tr></thead>
-              <tbody>
-                {visible.map((s) => (
-                  <tr key={s.email}>
-                    <td style={{ minWidth: 220 }}>
-                      <div className="d-flex align-items-center gap-3">
-                        <Avatar name={s.name} />
-                        <div className="min-w-0">
-                          <div className="fw-semibold">{s.name}</div>
-                          <div className="small text-muted-c text-break">{s.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="text-nowrap small mono">{s.phone}</td>
-                    <td style={{ minWidth: 200 }}>{s.courses.map((c) => <span key={c.id} className="chip">{c.title}</span>)}</td>
-                    <td className="text-nowrap small">{formatDate(s.lastDate)}</td>
-                    <td className="text-end">
-                      <button type="button" className="btn btn-soft btn-sm" onClick={() => setSelected(s)}><i className="bi bi-eye"></i> View</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ResponsiveTable
+            label="Students"
+            rows={visible}
+            rowKey={(s) => s.email}
+            columns={[
+              { key: "student", label: "Student", card: "title", className: "rt-person", render: (s) => (
+                <div className="d-flex align-items-center gap-3">
+                  <Avatar name={s.name} />
+                  <div className="min-w-0">
+                    <div className="fw-semibold">{s.name}</div>
+                    <div className="small text-muted-c text-break">{s.email}</div>
+                    {/* tablet + small desktop: the phone number moves up here */}
+                    <div className="small text-muted-c mono d-none d-md-block d-xl-none">{s.phone}</div>
+                  </div>
+                </div>
+              ) },
+              { key: "phone", label: "Phone", hide: "xl", nowrap: true, className: "small mono", render: (s) => s.phone },
+              { key: "courses", label: "Course(s)", render: (s) => s.courses.map((c) => <span key={c.id} className="chip">{c.title}</span>) },
+              { key: "last", label: "Last registration", nowrap: true, className: "small", render: (s) => formatDate(s.lastDate) },
+            ]}
+            actions={(s) => [
+              { icon: "bi-eye", label: "View", text: true, ariaLabel: `View ${s.name}`, onClick: () => setSelected(s) },
+            ]}
+          />
         )}
       </div>
 
@@ -191,22 +190,18 @@ export default function Students() {
               </div>
             </div>
             <h6 className="section-label">Registration history</h6>
-            <div className="table-responsive">
-              <table className="table admin-table align-middle mb-0">
-                <thead><tr><th>ID</th><th>Course(s)</th><th>Date</th><th className="text-end">Total</th><th>Status</th></tr></thead>
-                <tbody>
-                  {selected.registrations.map((r) => (
-                    <tr key={r.id}>
-                      <td><code>{r.id}</code></td>
-                      <td className="small">{r.courses.map((c) => c.title).join(", ")}</td>
-                      <td className="small text-nowrap">{formatDate(r.date)}</td>
-                      <td className="text-end">{money(r.total)}</td>
-                      <td><StatusBadge status={r.status} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <ResponsiveTable
+              label="Registration history"
+              rows={selected.registrations}
+              rowKey={(r) => r.id}
+              columns={[
+                { key: "id", label: "ID", card: "title", nowrap: true, render: (r) => <code>{r.id}</code> },
+                { key: "courses", label: "Course(s)", className: "small", render: (r) => r.courses.map((c) => c.title).join(", ") },
+                { key: "date", label: "Date", nowrap: true, className: "small", render: (r) => formatDate(r.date) },
+                { key: "total", label: "Total", align: "end", nowrap: true, render: (r) => money(r.total) },
+                { key: "status", label: "Status", card: "status", render: (r) => <StatusBadge status={r.status} /> },
+              ]}
+            />
           </>
         )}
       </Modal>

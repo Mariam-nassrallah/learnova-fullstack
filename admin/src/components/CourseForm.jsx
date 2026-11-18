@@ -185,19 +185,19 @@ export default function CourseForm({ show, course, courses, onClose, onSaved }) 
             <Feedback field="instructor" />
           </div>
 
-          <div className="col-4">
+          <div className="col-12 col-sm-4">
             <label htmlFor="cf-duration" className="form-label">Duration (hours)</label>
             <input id="cf-duration" type="number" min="1" max="300" className={cls("duration")} value={form.duration}
               onChange={(e) => update("duration", e.target.value)} />
             <Feedback field="duration" />
           </div>
-          <div className="col-4">
+          <div className="col-12 col-sm-4">
             <label htmlFor="cf-price" className="form-label">Price ($)</label>
             <input id="cf-price" type="number" min="0" step="0.01" className={cls("price")} value={form.price}
               onChange={(e) => update("price", e.target.value)} />
             <Feedback field="price" />
           </div>
-          <div className="col-4">
+          <div className="col-12 col-sm-4">
             <label htmlFor="cf-seats" className="form-label">Seats</label>
             <input id="cf-seats" type="number" min="0" max="500" step="1" className={cls("seats")} value={form.seats}
               onChange={(e) => update("seats", e.target.value)} />

@@ -55,7 +55,7 @@ export function StatCard({ icon, label, value, color = "violet", hint }) {
   return (
     <div className="panel stat-card h-100">
       <div className={`stat-icon c-${color}`}><i className={`bi ${icon}`}></i></div>
-      <div>
+      <div className="stat-text">
         <div className="stat-label">{label}</div>
         <div className="stat-value">{shown}</div>
         {hint && <div className="stat-hint">{hint}</div>}

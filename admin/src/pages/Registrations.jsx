@@ -3,13 +3,14 @@
 //   1. Load registrations + courses
 //   2. Filters kept in the URL (?status= and ?search=)
 //   3. Change status (PATCH) / delete
-//   4. Status pills + table + details modal
+//   4. Status pills + table (cards on phones) + details modal
 // =====================================================
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useOutletContext, useSearchParams } from "react-router-dom";
 import { api } from "../api.js";
 import { useToast } from "../context/ToastContext.jsx";
 import Modal from "../components/Modal.jsx";
+import ResponsiveTable from "../components/ResponsiveTable.jsx";
 import { Avatar, EmptyState, Loading, SearchInput, StatusBadge } from "../components/ui.jsx";
 import { REG_STATUSES } from "../constants.js";
 import { formatDate, formatDateTime, money } from "../utils.js";
@@ -147,41 +148,39 @@ export default function Registrations() {
             )}
           </EmptyState>
         ) : (
-          <div className="table-responsive">
-            <table className="table admin-table align-middle mb-0">
-              <thead><tr><th>ID</th><th>Student</th><th>Course(s)</th><th>Date</th><th className="text-end">Total</th><th>Status</th><th className="text-end"></th></tr></thead>
-              <tbody>
-                {visible.map((r) => (
-                  <tr key={r.id}>
-                    <td><code>{r.id}</code></td>
-                    <td style={{ minWidth: 200 }}>
-                      <div className="d-flex align-items-center gap-2">
-                        <Avatar name={r.name} size={32} />
-                        <div className="min-w-0">
-                          <div className="fw-semibold">{r.name}</div>
-                          <div className="small text-muted-c text-break">{r.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td style={{ minWidth: 180 }}>{r.courses.map((c) => <span key={c.id} className="chip">{c.title}</span>)}</td>
-                    <td className="small text-nowrap">{formatDate(r.date)}</td>
-                    <td className="text-end fw-semibold">{money(r.total)}</td>
-                    <td>
-                      <select className={`form-select form-select-sm status-select s-${r.status.toLowerCase()}`}
-                        aria-label={`Status of ${r.id}`} value={r.status} disabled={busyId === r.id}
-                        onChange={(e) => changeStatus(r, e.target.value)}>
-                        {REG_STATUSES.map((s) => <option key={s}>{s}</option>)}
-                      </select>
-                    </td>
-                    <td className="text-end text-nowrap">
-                      <button type="button" className="icon-btn sm" title="View" aria-label={`View ${r.id}`} onClick={() => setViewing(r)}><i className="bi bi-eye"></i></button>
-                      <button type="button" className="icon-btn sm danger" title="Delete" aria-label={`Delete ${r.id}`} onClick={() => handleDelete(r)}><i className="bi bi-trash3"></i></button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ResponsiveTable
+            label="Registrations"
+            rows={visible}
+            rowKey={(r) => r.id}
+            columns={[
+              { key: "id", label: "ID", hide: "xl", nowrap: true, render: (r) => <code>{r.id}</code> },
+              { key: "student", label: "Student", card: "title", className: "rt-person", render: (r) => (
+                <div className="d-flex align-items-center gap-2">
+                  <Avatar name={r.name} size={32} />
+                  <div className="min-w-0">
+                    <div className="fw-semibold">{r.name}</div>
+                    <div className="small text-muted-c text-break">{r.email}</div>
+                    {/* tablet + small desktop: ID and date move up here */}
+                    <div className="small text-muted-c d-none d-md-block d-xl-none"><code>{r.id}</code> · {formatDate(r.date)}</div>
+                  </div>
+                </div>
+              ) },
+              { key: "courses", label: "Course(s)", render: (r) => r.courses.map((c) => <span key={c.id} className="chip">{c.title}</span>) },
+              { key: "date", label: "Date", hide: "xl", nowrap: true, className: "small", render: (r) => formatDate(r.date) },
+              { key: "total", label: "Total", align: "end", nowrap: true, className: "fw-semibold", render: (r) => money(r.total) },
+              { key: "status", label: "Status", card: "status", render: (r) => (
+                <select className={`form-select form-select-sm status-select s-${r.status.toLowerCase()}`}
+                  aria-label={`Status of ${r.id}`} value={r.status} disabled={busyId === r.id}
+                  onChange={(e) => changeStatus(r, e.target.value)}>
+                  {REG_STATUSES.map((s) => <option key={s}>{s}</option>)}
+                </select>
+              ) },
+            ]}
+            actions={(r) => [
+              { icon: "bi-eye", label: "View", ariaLabel: `View ${r.id}`, onClick: () => setViewing(r) },
+              { icon: "bi-trash3", label: "Delete", ariaLabel: `Delete ${r.id}`, danger: true, onClick: () => handleDelete(r) },
+            ]}
+          />
         )}
       </div>
 
@@ -203,7 +202,7 @@ export default function Registrations() {
         </>}>
         {viewing && (
           <>
-            <div className="d-flex align-items-center gap-3 mb-3">
+            <div className="d-flex flex-wrap align-items-center gap-3 mb-3">
               <Avatar name={viewing.name} size={46} />
               <div className="flex-grow-1 min-w-0">
                 <div className="fw-semibold">{viewing.name}</div>
