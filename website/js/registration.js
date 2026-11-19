@@ -542,9 +542,10 @@ function goToStep(step, scroll = true) {
     ? '<i class="bi bi-check2-circle"></i> Confirm registration'
     : 'Next <i class="bi bi-arrow-right"></i>';
 
-  // Keep the top of the form visible on small screens
+  // Keep the top of the form visible on small screens (not hidden under the fixed navbar)
   const top = $("stepper").getBoundingClientRect().top;
-  if (scroll && (top < 0 || top > window.innerHeight)) $("register").scrollIntoView({ behavior: "smooth" });
+  const navBottom = document.querySelector(".nav-wrap")?.getBoundingClientRect().bottom || 0;
+  if (scroll && (top < navBottom || top > window.innerHeight)) $("register").scrollIntoView({ behavior: "smooth" });
 }
 
 // Step 2: the selected courses and any conflicts

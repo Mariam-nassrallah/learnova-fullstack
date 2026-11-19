@@ -46,6 +46,24 @@ Vite forwards every `/api` request to the server on port 3000. After changing th
 
 Seats: every registration that is not Rejected takes a seat, so rejecting one frees its seats.
 
+## Navbar and top bar
+
+Both stay at the top of the screen while you scroll, on every page.
+
+**Website navbar** (`website/css/style.css`, `website/js/main.js`)
+
+- The floating pill sits in a fixed strip (`.nav-wrap`, `position: fixed`, z-index 1030). The strip has the page background and the pill is solid, so page content never shows through the bar.
+- `--nav-h` (83px: a 16px gap + the 67px pill) is the height of the closed bar. The page uses it for the space at the top (`body` padding), for `#section` links (they stop 16px below the bar), for the hero height, and for the sticky box on the course page. If the navbar's height ever changes, update `--nav-h`.
+- Under 992px the menu opens inside the pill, and a long menu scrolls inside it. It closes after a link is clicked, on Esc, or when the screen gets wider.
+- While the mobile menu, a modal or the cart panel is open, the page behind it can't scroll (class `scroll-locked` on `<html>`). The scrollbar's width is added as padding, so nothing moves sideways.
+- Only modals, the cart panel, toasts and the confetti go above the navbar.
+
+**Admin top bar** (`admin/src/styles/admin.css`)
+
+- Fixed at the top. On desktop it starts where the sidebar ends; under 992px it is full width.
+- `--topbar-h` is its height: 79.3px on desktop, 75.3px from 768px, 71px from 576px, 67px on phones. The page content starts below it.
+- The mobile sidebar and its backdrop, modals and toasts go above it. Modals lock the page the same way as on the website (`admin/src/scrollLock.js`).
+
 ## Folder structure
 
 ```
@@ -67,6 +85,7 @@ learnova/
 ├── admin/                   React admin (Vite)
 │   └── src/
 │       ├── api.js           fetch helper (token, errors, 401 -> login)
+│       ├── scrollLock.js    locks page scroll while a modal is open
 │       ├── context/         AuthContext, ToastContext
 │       ├── components/      Layout, Modal, CourseForm, ResponsiveTable, ui (badges, avatar, cards...)
 │                            (see admin/COMPONENTS.md)

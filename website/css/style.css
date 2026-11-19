@@ -12,10 +12,15 @@
   --glass: rgba(255, 255, 255, 0.04);
   --glass-border: rgba(255, 255, 255, 0.09);
   --grad: linear-gradient(120deg, var(--violet), var(--cyan), var(--pink));
+  /* Height of the closed navbar: 16px gap + 67px pill (the same at every width) */
+  --nav-h: 83px;
 }
 
 html, body { overflow-x: clip; }
+/* The navbar is fixed: links to #sections stop 16px below it */
+html { scroll-padding-top: calc(var(--nav-h) + env(safe-area-inset-top) + 16px); }
 body {
+  padding-top: calc(var(--nav-h) + env(safe-area-inset-top)); /* room for the fixed navbar */
   background: var(--bg);
   color: var(--text);
   font-family: "Space Grotesk", sans-serif;
@@ -86,14 +91,24 @@ a { text-decoration: none; }
 }
 .btn-ghost:hover { background: rgba(255,255,255,0.1); color: #fff; }
 
-/* ---------- Floating pill navbar ---------- */
-/* Normal navbar: part of the page flow (scrolls away with the page) with a
-   solid background, so content never shows through it */
-.nav-wrap { position: relative; z-index: 1000; padding: 16px 12px 0; }
+/* ---------- Floating pill navbar (fixed) ---------- */
+/* Always at the top of the screen. Everything on the bar is solid: the strip
+   around the pill has the page background and the pill is #0d0c1a, so page
+   content never shows through it. No opacity, blur or transform on the bar.
+   Only modals (1055), the cart panel (1045), toasts (1100) and confetti (1090)
+   go above it. Its height is --nav-h. */
+.nav-wrap {
+  position: fixed; top: 0; left: 0; right: 0; width: 100%; z-index: 1030;
+  height: calc(var(--nav-h) + env(safe-area-inset-top));
+  padding: calc(16px + env(safe-area-inset-top)) 12px 0;
+  background: var(--bg);
+}
 .navbar.glass {
   border-radius: 20px; padding: 10px 18px;
-  background: #0d0c1a; backdrop-filter: none; -webkit-backdrop-filter: none;
+  background: #0d0c1a; border-color: #23222f; /* solid: same color as the old see-through border */
+  backdrop-filter: none; -webkit-backdrop-filter: none;
 }
+.nav-wrap .btn-glow:hover { transform: none; } /* keeps its glow, but no lift on the bar */
 .navbar-brand { font-weight: 700; font-size: 1.35rem; color: #fff !important; }
 .logo-mark {
   display: inline-flex; width: 34px; height: 34px; border-radius: 10px; margin-right: 6px;
@@ -101,10 +116,11 @@ a { text-decoration: none; }
 }
 .navbar .nav-link { color: var(--muted); font-weight: 500; margin: 0 4px; border-radius: 10px; padding: 8px 14px !important; }
 .navbar .nav-link:hover { color: #fff; }
-.navbar .nav-link.active { color: #fff; background: rgba(255,255,255,0.07); }
+.navbar .nav-link.active { color: #fff; background: #1e1d2a; }
 
 /* ---------- Hero ---------- */
-.hero { padding: 60px 0 100px; min-height: 100vh; display: flex; align-items: center; }
+/* The navbar + the hero fill the first screen */
+.hero { padding: 60px 0 100px; min-height: calc(100vh - var(--nav-h) - env(safe-area-inset-top)); display: flex; align-items: center; }
 .hero h1 { font-size: clamp(2.6rem, 6vw, 4.6rem); line-height: 1.05; }
 .avatars span {
   width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
@@ -278,7 +294,7 @@ a { text-decoration: none; }
 .accordion-button { background: transparent; color: var(--text); font-weight: 600; box-shadow: none !important; }
 .accordion-button:not(.collapsed) { background: rgba(139, 92, 246, 0.12); color: #c4b5fd; }
 .lesson { display: flex; justify-content: space-between; padding: 12px 20px; border-top: 1px solid var(--glass-border); font-size: 0.9rem; }
-.sticky-side { position: sticky; top: 24px; }
+.sticky-side { position: sticky; top: calc(var(--nav-h) + env(safe-area-inset-top) + 24px); } /* stays below the navbar */
 .modal-content { background: var(--bg-2); border: 1px solid var(--glass-border); border-radius: 24px; }
 
 /* ---------- Team ---------- */
@@ -326,6 +342,25 @@ footer a:hover { color: #fff; }
   .navbar-collapse { padding-top: 12px; }
 }
 
+/* Mobile menu (under 992px): it opens inside the fixed pill. A long menu
+   scrolls inside the bar; main.js locks the page while it is open. */
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    max-height: calc(100vh - var(--nav-h) - env(safe-area-inset-top) - 24px);
+    max-height: calc(100dvh - var(--nav-h) - env(safe-area-inset-top) - 24px);
+    overflow-y: auto; overscroll-behavior: contain;
+  }
+}
+
+/* Page scroll lock (mobile menu, modals, cart panel), set by main.js.
+   html and body keep overflow-x: clip, so the lock is a class on <html>.
+   --scrollbar-w is the width of the scrollbar that disappears: it is added
+   as padding so nothing moves sideways. Bootstrap also sets overflow: hidden
+   on <body> for modals; keeping body at clip keeps sticky boxes in place. */
+html.scroll-locked { overflow: hidden; padding-right: var(--scrollbar-w, 0px); }
+html.scroll-locked body { overflow-x: clip !important; overflow-y: visible !important; }
+html.scroll-locked .nav-wrap { padding-right: calc(12px + var(--scrollbar-w, 0px)); }
+
 /* Keep glowing blobs from causing sideways scroll */
 .hero, .page-header, section { overflow-x: clip; }
 .chip-2 { bottom: -28px; left: -30px; }
@@ -339,13 +374,13 @@ footer a:hover { color: #fff; }
 .nav-login {
   display: inline-flex; align-items: center; justify-content: center;
   width: 42px; height: 42px; margin-right: 10px; flex-shrink: 0;
-  border-radius: 50%; background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: 50%; background: #171623; border: 1px solid #23222f; /* solid versions of the glass colors */
   color: var(--text); font-size: 1.3rem; text-decoration: none;
-  backdrop-filter: blur(10px); transition: 0.3s;
+  transition: 0.3s;
 }
 .nav-login:hover, .nav-login:focus-visible {
-  color: #fff; border-color: var(--violet); background: rgba(139, 92, 246, 0.15);
-  box-shadow: 0 0 22px rgba(139, 92, 246, 0.55); transform: translateY(-2px);
+  color: #fff; border-color: var(--violet); background: #20183b;
+  box-shadow: 0 0 22px rgba(139, 92, 246, 0.55);
 }
 .nav-login-text { display: none; }
 
@@ -355,7 +390,6 @@ footer a:hover { color: #fff; }
     width: 100%; height: auto; justify-content: flex-start; gap: 10px;
     margin: 6px 0 12px; padding: 10px 14px; border-radius: 12px; font-size: 1rem; font-weight: 500;
   }
-  .nav-login:hover { transform: none; }
   .nav-login i { font-size: 1.25rem; }
   .nav-login-text { display: inline; }
 }

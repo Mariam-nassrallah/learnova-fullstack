@@ -5,7 +5,7 @@ Reusable pieces of the React admin (`admin/src/components/`). Every color comes 
 | Component | File | What it does |
 |---|---|---|
 | `Layout` | `Layout.jsx` | Sidebar, top bar, footer and the shared confirm dialog around every page |
-| `Modal` | `Modal.jsx` | Bootstrap-styled dialog controlled by React (Esc / backdrop click closes it) |
+| `Modal` | `Modal.jsx` | Bootstrap-styled dialog controlled by React (Esc / backdrop click closes it). The page behind it is locked while it is open (`src/scrollLock.js`). |
 | `CourseForm` | `CourseForm.jsx` | Add / edit course modal with validation |
 | `ResponsiveTable` | `ResponsiveTable.jsx` | Every data table: a table on tablet and desktop, stacked cards on phones |
 | `ThemeToggle` | `ThemeToggle.jsx` | Light / dark switch in the top bar |
@@ -102,3 +102,4 @@ const isPhone = useMediaQuery("(max-width: 767.98px)");
 - Course form: every field is stacked under 576px (from 576px, Duration / Price / Seats sit side by side; the other fields stay stacked up to 768px).
 - Under 576px: stat cards put the icon above the number, and modals take the full width.
 - Sidebar: fixed on screens 992px and wider, a slide-in panel below that (menu button in the top bar).
+- Top bar: fixed at the top, `--topbar-h` high (changes at 992 / 768 / 576px); the content starts below it. On desktop it starts where the sidebar ends.

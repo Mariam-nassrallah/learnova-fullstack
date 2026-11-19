@@ -1,16 +1,63 @@
 // ===== Learnova - small interactions =====
 
-// 1. Mobile menu: close it after a link (or the cart button) inside it is clicked
-const mainNav = document.getElementById("mainNav");
-if (mainNav && window.bootstrap) {
-  mainNav.querySelectorAll("a, button").forEach((item) => {
-    item.addEventListener("click", () => {
-      if (mainNav.classList.contains("show")) bootstrap.Collapse.getOrCreateInstance(mainNav, { toggle: false }).hide();
-    });
-  });
+// 1. Page scroll lock (mobile menu, modals, cart panel)
+//    html and body use overflow-x: clip, so the page is locked with a class on
+//    <html> (overflow: hidden). The scrollbar's width is measured first and
+//    added as padding to <html> and the fixed navbar, so nothing moves sideways.
+//    Several things can hold the lock at once; the page unlocks when the last
+//    one lets go.
+const root = document.documentElement;
+const scrollLocks = new Set();
+
+function lockScroll(owner) {
+  if (scrollLocks.size === 0) {
+    root.style.setProperty("--scrollbar-w", `${window.innerWidth - root.clientWidth}px`);
+    root.classList.add("scroll-locked");
+  }
+  scrollLocks.add(owner);
 }
 
-// 2. Reveal elements when they scroll into view
+function unlockScroll(owner) {
+  scrollLocks.delete(owner);
+  if (scrollLocks.size === 0) {
+    root.classList.remove("scroll-locked");
+    root.style.removeProperty("--scrollbar-w");
+  }
+}
+
+// Bootstrap modals and the cart panel (offcanvas). The "show" event comes
+// before Bootstrap measures the scrollbar, so it doesn't add its own padding.
+["modal", "offcanvas"].forEach((type) => {
+  document.addEventListener(`show.bs.${type}`, (e) => { if (!e.defaultPrevented) lockScroll(e.target); });
+  document.addEventListener(`hidden.bs.${type}`, (e) => unlockScroll(e.target));
+});
+
+// 2. Mobile menu (under 992px): opens inside the fixed navbar
+//    - the page is locked while it is open
+//    - closes after a link (or the cart button) inside it is clicked, on Esc,
+//      and when the screen gets wide enough for the full navbar
+const mainNav = document.getElementById("mainNav");
+if (mainNav && window.bootstrap) {
+  const menu = bootstrap.Collapse.getOrCreateInstance(mainNav, { toggle: false });
+  const toggler = document.querySelector('[data-bs-target="#mainNav"]');
+  const closeMenu = () => { if (mainNav.classList.contains("show")) menu.hide(); };
+
+  mainNav.addEventListener("show.bs.collapse", (e) => { if (e.target === mainNav) lockScroll(mainNav); });
+  mainNav.addEventListener("hidden.bs.collapse", (e) => { if (e.target === mainNav) unlockScroll(mainNav); });
+
+  mainNav.querySelectorAll("a, button").forEach((item) => item.addEventListener("click", closeMenu));
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && mainNav.classList.contains("show")) {
+      closeMenu();
+      if (toggler) toggler.focus();
+    }
+  });
+
+  window.matchMedia("(min-width: 992px)").addEventListener("change", (e) => { if (e.matches) closeMenu(); });
+}
+
+// 3. Reveal elements when they scroll into view
 const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
@@ -21,7 +68,7 @@ const revealObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0.15 });
 document.querySelectorAll(".reveal").forEach((el) => revealObserver.observe(el));
 
-// 3. Count numbers up (e.g. <span class="counter" data-target="2500">0</span>)
+// 4. Count numbers up (e.g. <span class="counter" data-target="2500">0</span>)
 const counterObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (!entry.isIntersecting) return;
@@ -39,7 +86,7 @@ const counterObserver = new IntersectionObserver((entries) => {
 });
 document.querySelectorAll(".counter").forEach((el) => counterObserver.observe(el));
 
-// 4. Course category filter + search (courses page only)
+// 5. Course category filter + search (courses page only)
 const filterButtons = document.querySelectorAll(".filter-btn");
 const courseItems = document.querySelectorAll(".course-item");
 const searchInput = document.querySelector("#searchCourses");
@@ -64,7 +111,7 @@ filterButtons.forEach((btn) => {
 });
 if (searchInput) searchInput.addEventListener("input", applyFilters);
 
-// 5. Forms (contact + newsletter): show a confirmation instead of reloading the page
+// 6. Forms (contact + newsletter): show a confirmation instead of reloading the page
 //    Forms marked data-no-auto handle themselves (enroll modal, registration form)
 document.querySelectorAll("form:not([data-no-auto])").forEach((form) => {
   form.addEventListener("submit", (e) => {

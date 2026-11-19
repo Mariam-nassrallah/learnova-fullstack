@@ -20,6 +20,10 @@
 :root {
   --radius: 18px;
   --sidebar-w: 260px;
+  /* Fixed top bar: its height (measured; it changes at 992 / 768 / 576px, see
+     section 8) and its side padding */
+  --topbar-h: 79.3125px;
+  --topbar-pad-x: 28px;
   --grad-light: linear-gradient(135deg, #9E6899, #D6A8C4);   /* logo + admin avatar */
   --theme-transition: background-color 0.3s, color 0.3s, border-color 0.3s;
 
@@ -149,8 +153,17 @@ body {
 /* No sideways scroll: anything that is still too wide gets clipped
    instead of making the whole page scroll horizontally */
 html, body { overflow-x: clip; max-width: 100%; }
+html { scroll-padding-top: var(--topbar-h); } /* focused fields never hide under the top bar */
+
+/* Page scroll lock while a modal is open (scrollLock.js). html and body keep
+   overflow-x: clip, so the lock is a class on <html>. --scrollbar-w is the
+   width of the scrollbar that disappears: it is added as padding so nothing
+   moves sideways. */
+html.scroll-locked { overflow: hidden; padding-right: var(--scrollbar-w, 0px); }
+html.scroll-locked .topbar { padding-right: calc(var(--topbar-pad-x) + var(--scrollbar-w, 0px)); }
+html.scroll-locked .toast-stack { right: calc(16px + var(--scrollbar-w, 0px)); }
 img, svg, video, canvas, iframe, table, pre, select, input, textarea { max-width: 100%; }
-.row > *, .panel, .modal-dialog, .modal-content { max-width: 100%; min-width: 0; }
+.row > *, .panel, .modal-content { max-width: 100%; min-width: 0; }   /* .modal-dialog keeps Bootstrap's 500px / 800px widths */
 h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
 a { color: var(--primary); text-decoration: none; }
 a:hover { color: var(--primary-hover); }
@@ -275,10 +288,19 @@ code { color: var(--code); }
 .tip-card i { color: var(--ic3); font-size: 1.1rem; }
 .tip-card p { color: var(--muted); margin-top: 2px; }
 
-.admin-main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; min-width: 0; }
+/* padding-top: room for the fixed top bar */
+.admin-main {
+  margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; min-width: 0;
+  padding-top: var(--topbar-h);
+}
+/* Top bar: always visible. Starts where the sidebar ends (full width under
+   992px). Solid background in both themes, nothing shows through it.
+   Only the sidebar (1040), its backdrop (1035), modals (1050/1055) and
+   toasts (1100) go above it. */
 .topbar {
-  position: relative; z-index: 1020; display: flex; align-items: center; gap: 12px;
-  padding: 14px 28px; background: var(--topbar); border-bottom: 1px solid var(--border);
+  position: fixed; top: 0; right: 0; left: var(--sidebar-w); z-index: 1030;
+  height: var(--topbar-h); display: flex; align-items: center; gap: 12px;
+  padding: 0 var(--topbar-pad-x); background: var(--topbar); border-bottom: 1px solid var(--border);
 }
 .page-title { font-size: 1.35rem; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .page-subtitle { font-size: 0.82rem; color: var(--muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -552,14 +574,17 @@ code { color: var(--code); }
 @media (max-width: 991.98px) {
   .sidebar { transform: translateX(-100%); transition: transform 0.28s ease, var(--theme-transition); box-shadow: none; }
   .sidebar.open { transform: none; box-shadow: var(--shadow-pop); }
-  .sidebar-backdrop { position: fixed; inset: 0; z-index: 1030; background: var(--backdrop); animation: fadeIn 0.2s; }
+  :root { --topbar-h: 75.3125px; --topbar-pad-x: 16px; }
+  /* 1035: above the fixed top bar (1030), below the sidebar (1040) */
+  .sidebar-backdrop { position: fixed; inset: 0; z-index: 1035; background: var(--backdrop); animation: fadeIn 0.2s; }
   .admin-main { margin-left: 0; }
-  .topbar { padding: 12px 16px; }
+  .topbar { left: 0; }
   .admin-content { padding: 20px 16px; }
   .admin-footer { padding: 16px; }
 }
 /* Phones + small tablets: search, filters and buttons full width, form fields stacked */
 @media (max-width: 767.98px) {
+  :root { --topbar-h: 71px; }   /* the name next to the avatar is hidden */
   .filters { flex-direction: column; }
   .filters > *, .filters .form-select { flex: 1 1 auto; width: 100%; }
   .panel-head > div { flex: 1 1 100%; }
@@ -570,7 +595,8 @@ code { color: var(--code); }
   .info-banner .btn { width: 100%; }
 }
 @media (max-width: 575.98px) {
-  .topbar { gap: 8px; padding: 10px 12px; }
+  :root { --topbar-h: 67px; --topbar-pad-x: 12px; }   /* subtitle hidden */
+  .topbar { gap: 8px; }
   .admin-content { padding: 16px 12px; }
   .panel { padding: 16px; }
   .modal-dialog { margin: 0.5rem; max-width: none; }

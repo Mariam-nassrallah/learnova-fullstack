@@ -1,22 +1,26 @@
 // =====================================================
 // Modal: a Bootstrap-styled dialog controlled by React
 // (no Bootstrap JavaScript). Closes with Esc or a click
-// on the backdrop.
+// on the backdrop. The page behind it is locked while it
+// is open (scrollLock.js).
 // =====================================================
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
+import { lockScroll } from "../scrollLock.js";
 
 export default function Modal({ show, onClose, title, children, footer, size = "", labelId = "modalTitle" }) {
-  // Esc closes the modal, and the page behind it can't scroll
+  // The page behind the modal can't scroll (lock on <html>, see scrollLock.js)
+  useEffect(() => {
+    if (!show) return;
+    return lockScroll();
+  }, [show]);
+
+  // Esc closes the modal
   useEffect(() => {
     if (!show) return;
     const onKey = (e) => e.key === "Escape" && onClose();
     document.addEventListener("keydown", onKey);
-    document.body.classList.add("modal-open");
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.classList.remove("modal-open");
-    };
+    return () => document.removeEventListener("keydown", onKey);
   }, [show, onClose]);
 
   if (!show) return null;
