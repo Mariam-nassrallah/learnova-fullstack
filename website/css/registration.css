@@ -4,8 +4,9 @@
    ========================================= */
 
 /* Section links (#catalog, #register...) scroll smoothly and stop 16px
-   below the fixed navbar (scroll-padding-top in style.css) */
-html { scroll-behavior: smooth; }
+   below the navbar (scroll-padding-top in style.css). On phones the page
+   content scrolls inside .app-content, so it scrolls smoothly too. */
+html, .app-content { scroll-behavior: smooth; }
 
 /* ---------- Navbar cart button ---------- */
 .cart-btn { display: inline-flex; align-items: center; gap: 8px; }
@@ -139,7 +140,10 @@ html { scroll-behavior: smooth; }
 .discount { color: #34d399; }
 
 /* ---------- Cart offcanvas ---------- */
-.cart-panel { background: var(--bg-2); color: var(--text); border-left: 1px solid var(--glass-border) !important; }
+.cart-panel {
+  background: var(--bg-2); color: var(--text); border-left: 1px solid var(--glass-border) !important;
+  padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); /* clear of the notch (0 on computers) */
+}
 .cart-panel .offcanvas-header { border-bottom: 1px solid var(--glass-border); }
 .cart-footer { border-top: 1px solid var(--glass-border); }
 .cart-empty { text-align: center; color: var(--muted); padding: 40px 10px; }
@@ -158,7 +162,10 @@ html { scroll-behavior: smooth; }
 
 /* ---------- Toasts ---------- */
 .toast-container { z-index: 1100; }
-html.scroll-locked .toast-container { margin-right: var(--scrollbar-w, 0px); } /* no sideways jump while a modal is open */
+.toast-container { margin-bottom: env(safe-area-inset-bottom); } /* above the iPhone home indicator */
+@media (min-width: 992px) {
+  html.scroll-locked .toast-container { margin-right: var(--scrollbar-w, 0px); } /* no sideways jump while a modal is open */
+}
 .toast { background: rgba(13, 12, 26, 0.92); border: 1px solid var(--glass-border); color: var(--text); border-radius: 16px; backdrop-filter: blur(12px); }
 .toast .toast-icon { font-size: 1.2rem; }
 .toast.t-success .toast-icon { color: #34d399; }

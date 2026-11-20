@@ -352,14 +352,63 @@ footer a:hover { color: #fff; }
   }
 }
 
+/* ---------- Phones + tablets (under 992px): app shell ---------- */
+/* The page itself never scrolls. The navbar is a normal block at the top of
+   the screen and only <main class="app-content"> scrolls, below it. So page
+   content can never go behind or above the navbar: not when a phone browser's
+   toolbars or status bar sit over the page, not in in-app browsers, and not
+   when iOS bounces at the top or bottom.
+   viewport-fit=cover lets the page reach under the notch / status bar: the
+   navbar's padding-top (env(safe-area-inset-top)) fills that area with its
+   solid background. */
+@media (max-width: 991.98px) {
+  html, body { height: 100%; overflow: hidden; overscroll-behavior-y: none; }
+  body {
+    display: flex; flex-direction: column;
+    height: 100vh; height: 100dvh;
+    padding-top: 0;
+  }
+  .nav-wrap {
+    position: relative; flex: 0 0 auto; /* same height, solid background and z-index */
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+  .app-content {
+    flex: 1 1 auto; min-height: 0;
+    overflow-y: auto; overflow-x: clip;
+    -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    scroll-padding-top: 16px; /* #section links stop 16px below the navbar */
+    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  /* The navbar + the hero fill the screen */
+  .hero {
+    min-height: calc(100vh - var(--nav-h) - env(safe-area-inset-top));
+    min-height: calc(100dvh - var(--nav-h) - env(safe-area-inset-top));
+  }
+}
+
+/* Modals stay clear of the notch and the home indicator (0 on computers) */
+.modal { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+
 /* Page scroll lock (mobile menu, modals, cart panel), set by main.js.
-   html and body keep overflow-x: clip, so the lock is a class on <html>.
    --scrollbar-w is the width of the scrollbar that disappears: it is added
-   as padding so nothing moves sideways. Bootstrap also sets overflow: hidden
-   on <body> for modals; keeping body at clip keeps sticky boxes in place. */
-html.scroll-locked { overflow: hidden; padding-right: var(--scrollbar-w, 0px); }
-html.scroll-locked body { overflow-x: clip !important; overflow-y: visible !important; }
-html.scroll-locked .nav-wrap { padding-right: calc(12px + var(--scrollbar-w, 0px)); }
+   as padding so nothing moves sideways. */
+html.scroll-locked { overflow: hidden; }
+/* Computers: the page (<html>) scrolls. html and body keep overflow-x: clip;
+   Bootstrap sets overflow: hidden on <body> for modals, keeping it at clip
+   keeps sticky boxes in place. */
+@media (min-width: 992px) {
+  html.scroll-locked { padding-right: var(--scrollbar-w, 0px); }
+  html.scroll-locked body { overflow-x: clip !important; overflow-y: visible !important; }
+  html.scroll-locked .nav-wrap { padding-right: calc(12px + var(--scrollbar-w, 0px)); }
+}
+/* Phones + tablets: .app-content scrolls, so that is what gets locked */
+@media (max-width: 991.98px) {
+  html.scroll-locked .app-content {
+    overflow-y: hidden;
+    padding-right: calc(env(safe-area-inset-right) + var(--scrollbar-w, 0px));
+  }
+}
 
 /* Keep glowing blobs from causing sideways scroll */
 .hero, .page-header, section { overflow-x: clip; }

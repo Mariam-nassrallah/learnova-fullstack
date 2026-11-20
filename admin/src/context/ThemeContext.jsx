@@ -7,6 +7,14 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 const THEME_KEY = "learnova-admin-theme";
+
+// Phone browsers color their bar / status bar area with <meta name="theme-color">:
+// the same solid color as the top bar (--topbar in admin.css)
+export const THEME_COLORS = { light: "#FBF6F9", dark: "#120B14" };
+export function setThemeColor(color) {
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", color);
+}
 const ThemeContext = createContext(null);
 
 function savedTheme() {
@@ -24,6 +32,7 @@ export function ThemeProvider({ children }) {
     const root = document.documentElement;
     root.setAttribute("data-theme", theme);
     root.setAttribute("data-bs-theme", theme); // Bootstrap parts (close buttons, selects) follow too
+    setThemeColor(THEME_COLORS[theme]);
     try {
       localStorage.setItem(THEME_KEY, theme);
     } catch {

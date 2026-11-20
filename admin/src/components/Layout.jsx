@@ -5,10 +5,12 @@
 //   3. Confirm dialog (Promise-based)
 //   4. Menu actions (sample data, reset, logout)
 //   5. Sidebar + top navbar + footer
+// On phones the top bar is a normal block and only .admin-scroll (the page
+// + footer) scrolls, below it ("app shell", see admin.css section 8).
 // Pages get { confirm, refreshPending, pending, dataVersion, loadSample }
 // through useOutletContext().
 // =====================================================
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { api } from "../api.js";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -46,11 +48,21 @@ export default function Layout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dataVersion, setDataVersion] = useState(0); // +1 = pages reload their data
   const menuRef = useRef(null);
+  const scrollRef = useRef(null);
 
-  // Close the mobile sidebar + profile menu when the page changes
+  // App shell on phones: turned on only while this layout is shown (the
+  // login page keeps normal page scrolling)
+  useLayoutEffect(() => {
+    document.documentElement.classList.add("app-shell");
+    return () => document.documentElement.classList.remove("app-shell");
+  }, []);
+
+  // Close the mobile sidebar + profile menu when the page changes, and start
+  // the new page at the top (on phones .admin-scroll is what scrolls)
   useEffect(() => {
     setSidebarOpen(false);
     setMenuOpen(false);
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
   }, [location.pathname]);
 
   // Close the profile menu on an outside click or Esc
@@ -237,14 +249,17 @@ export default function Layout() {
           </div>
         </header>
 
-        <main className="admin-content">
-          <Outlet context={{ confirm, refreshPending, pending, dataVersion, loadSample }} />
-        </main>
+        {/* Page + footer: on phones this part scrolls by itself, below the top bar */}
+        <div className="admin-scroll" ref={scrollRef}>
+          <main className="admin-content">
+            <Outlet context={{ confirm, refreshPending, pending, dataVersion, loadSample }} />
+          </main>
 
-        <footer className="admin-footer">
-          <span>&copy; 2026 Learnova Admin</span>
-          <span>Built by Mariam Nassrallah</span>
-        </footer>
+          <footer className="admin-footer">
+            <span>&copy; 2026 Learnova Admin</span>
+            <span>Built by Mariam Nassrallah</span>
+          </footer>
+        </div>
       </div>
 
       {/* Shared confirm dialog */}

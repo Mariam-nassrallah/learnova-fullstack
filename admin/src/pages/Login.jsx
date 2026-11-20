@@ -6,10 +6,11 @@
 //   2. Validation (email format, password 6+ characters)
 //   3. Submit -> POST /api/auth/login
 // =====================================================
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useToast } from "../context/ToastContext.jsx";
+import { THEME_COLORS, setThemeColor, useTheme } from "../context/ThemeContext.jsx";
 
 const DEMO = { email: "admin@learnova.com", password: "admin123" };
 
@@ -32,6 +33,13 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { theme } = useTheme();
+
+  // This page is always dark, so the phone browser bar is dark too while it is shown
+  useEffect(() => {
+    setThemeColor(THEME_COLORS.dark);
+    return () => setThemeColor(THEME_COLORS[theme]);
+  }, [theme]);
 
   // 1. Already logged in
   if (token && role === "admin") return <Navigate to="/dashboard" replace />;

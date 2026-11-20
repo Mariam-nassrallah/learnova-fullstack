@@ -1,17 +1,35 @@
 // ===== Learnova - small interactions =====
 
-// 1. Page scroll lock (mobile menu, modals, cart panel)
-//    html and body use overflow-x: clip, so the page is locked with a class on
-//    <html> (overflow: hidden). The scrollbar's width is measured first and
-//    added as padding to <html> and the fixed navbar, so nothing moves sideways.
-//    Several things can hold the lock at once; the page unlocks when the last
-//    one lets go.
+// 1. What scrolls the page
+//    Computers (992px and wider): the window (<html>), under a fixed navbar.
+//    Phones + tablets: <main class="app-content">, below the navbar (app shell,
+//    see style.css). Anything that needs the page's scroll uses pageScroller().
+//    (The reveal / counter observers below watch the screen, so they work with
+//    both without changes. Section links and scrollIntoView() also scroll
+//    .app-content by themselves.)
 const root = document.documentElement;
+const appContent = document.querySelector(".app-content");
+const phoneLayout = window.matchMedia("(max-width: 991.98px)");
+
+function pageScroller() {
+  return phoneLayout.matches && appContent ? appContent : root;
+}
+
+// 2. Page scroll lock (mobile menu, modals, cart panel)
+//    A class on <html>: on computers <html> gets overflow: hidden, on phones
+//    .app-content does (style.css). The scrollbar's width is measured first and
+//    added as padding, so nothing moves sideways. Several things can hold the
+//    lock at once; the page unlocks when the last one lets go.
 const scrollLocks = new Set();
+
+function scrollbarWidth() {
+  const scroller = pageScroller();
+  return scroller === root ? window.innerWidth - root.clientWidth : scroller.offsetWidth - scroller.clientWidth;
+}
 
 function lockScroll(owner) {
   if (scrollLocks.size === 0) {
-    root.style.setProperty("--scrollbar-w", `${window.innerWidth - root.clientWidth}px`);
+    root.style.setProperty("--scrollbar-w", `${scrollbarWidth()}px`);
     root.classList.add("scroll-locked");
   }
   scrollLocks.add(owner);
@@ -32,7 +50,7 @@ function unlockScroll(owner) {
   document.addEventListener(`hidden.bs.${type}`, (e) => unlockScroll(e.target));
 });
 
-// 2. Mobile menu (under 992px): opens inside the fixed navbar
+// 3. Mobile menu (under 992px): opens inside the navbar, over the page
 //    - the page is locked while it is open
 //    - closes after a link (or the cart button) inside it is clicked, on Esc,
 //      and when the screen gets wide enough for the full navbar
@@ -57,7 +75,7 @@ if (mainNav && window.bootstrap) {
   window.matchMedia("(min-width: 992px)").addEventListener("change", (e) => { if (e.matches) closeMenu(); });
 }
 
-// 3. Reveal elements when they scroll into view
+// 4. Reveal elements when they scroll into view
 const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
@@ -68,7 +86,7 @@ const revealObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0.15 });
 document.querySelectorAll(".reveal").forEach((el) => revealObserver.observe(el));
 
-// 4. Count numbers up (e.g. <span class="counter" data-target="2500">0</span>)
+// 5. Count numbers up (e.g. <span class="counter" data-target="2500">0</span>)
 const counterObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (!entry.isIntersecting) return;
@@ -86,7 +104,7 @@ const counterObserver = new IntersectionObserver((entries) => {
 });
 document.querySelectorAll(".counter").forEach((el) => counterObserver.observe(el));
 
-// 5. Course category filter + search (courses page only)
+// 6. Course category filter + search (courses page only)
 const filterButtons = document.querySelectorAll(".filter-btn");
 const courseItems = document.querySelectorAll(".course-item");
 const searchInput = document.querySelector("#searchCourses");
@@ -111,7 +129,7 @@ filterButtons.forEach((btn) => {
 });
 if (searchInput) searchInput.addEventListener("input", applyFilters);
 
-// 6. Forms (contact + newsletter): show a confirmation instead of reloading the page
+// 7. Forms (contact + newsletter): show a confirmation instead of reloading the page
 //    Forms marked data-no-auto handle themselves (enroll modal, registration form)
 document.querySelectorAll("form:not([data-no-auto])").forEach((form) => {
   form.addEventListener("submit", (e) => {

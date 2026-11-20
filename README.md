@@ -48,21 +48,29 @@ Seats: every registration that is not Rejected takes a seat, so rejecting one fr
 
 ## Navbar and top bar
 
-Both stay at the top of the screen while you scroll, on every page.
+Both stay at the top of the screen while you scroll, on every page. They work differently on computers and on phones:
+
+| Screen | How it works |
+|---|---|
+| Computers (992px and wider) | The bar is `position: fixed` and the whole page scrolls under it. |
+| Phones and tablets (under 992px) | "App shell": the page itself never scrolls. The bar is a normal block at the top of the screen, and only the content area below it scrolls (`<main class="app-content">` on the website, `.admin-scroll` in the admin). Page content can't get behind or above the bar, even in phone browsers whose toolbars or status bar sit over the page, in in-app browsers (WhatsApp, Instagram, Telegram), or when iOS bounces at the top or bottom. |
+
+On phones the pages use `viewport-fit=cover`, so they reach under the notch / status bar. The bar's `padding-top: env(safe-area-inset-top)` fills that area with its own solid color, and `<meta name="theme-color">` gives the browser's bar the same color (website `#07060f`; admin `#FBF6F9` light, `#120B14` dark, updated when the theme changes).
 
 **Website navbar** (`website/css/style.css`, `website/js/main.js`)
 
-- The floating pill sits in a fixed strip (`.nav-wrap`, `position: fixed`, z-index 1030). The strip has the page background and the pill is solid, so page content never shows through the bar.
+- The floating pill sits in a strip (`.nav-wrap`, z-index 1030; fixed on computers). The strip has the page background and the pill is solid, so page content never shows through the bar.
 - `--nav-h` (83px: a 16px gap + the 67px pill) is the height of the closed bar. The page uses it for the space at the top (`body` padding), for `#section` links (they stop 16px below the bar), for the hero height, and for the sticky box on the course page. If the navbar's height ever changes, update `--nav-h`.
 - Under 992px the menu opens inside the pill, and a long menu scrolls inside it. It closes after a link is clicked, on Esc, or when the screen gets wider.
-- While the mobile menu, a modal or the cart panel is open, the page behind it can't scroll (class `scroll-locked` on `<html>`). The scrollbar's width is added as padding, so nothing moves sideways.
+- While the mobile menu, a modal or the cart panel is open, the page behind it can't scroll (class `scroll-locked` on `<html>`; on phones it locks `.app-content`). The scrollbar's width is added as padding, so nothing moves sideways.
+- Every page wraps its sections and footer in `<main class="app-content">`. Modals, the cart panel and toasts stay outside it. On computers `<main>` is just a normal block.
 - Only modals, the cart panel, toasts and the confetti go above the navbar.
 
-**Admin top bar** (`admin/src/styles/admin.css`)
+**Admin top bar** (`admin/src/styles/admin.css`, `admin/src/components/Layout.jsx`)
 
-- Fixed at the top. On desktop it starts where the sidebar ends; under 992px it is full width.
+- Computers: fixed at the top, starting where the sidebar ends. Phones: full width, in the layout, with `.admin-scroll` (the page + footer) scrolling below it. `Layout.jsx` turns this on with the class `app-shell` on `<html>`, so the login page scrolls normally. Changing page starts the new page at the top.
 - `--topbar-h` is its height: 79.3px on desktop, 75.3px from 768px, 71px from 576px, 67px on phones. The page content starts below it.
-- The mobile sidebar and its backdrop, modals and toasts go above it. Modals lock the page the same way as on the website (`admin/src/scrollLock.js`).
+- The mobile sidebar and its backdrop, modals and toasts go above it. Modals lock the page the same way as on the website (`admin/src/scrollLock.js`; on phones it locks `.admin-scroll`).
 
 ## Folder structure
 

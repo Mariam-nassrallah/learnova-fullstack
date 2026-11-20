@@ -11,7 +11,7 @@
      5. Charts (bars + donut)
      6. Modals, toasts, login
      7. Responsive table (ResponsiveTable component)
-     8. Responsive
+     8. Responsive (+ the phone app shell)
    Nothing may scroll sideways on any screen: the page only
    scrolls vertically (see "No sideways scroll" in section 1).
    ===================================================== */
@@ -155,13 +155,16 @@ body {
 html, body { overflow-x: clip; max-width: 100%; }
 html { scroll-padding-top: var(--topbar-h); } /* focused fields never hide under the top bar */
 
-/* Page scroll lock while a modal is open (scrollLock.js). html and body keep
-   overflow-x: clip, so the lock is a class on <html>. --scrollbar-w is the
-   width of the scrollbar that disappears: it is added as padding so nothing
-   moves sideways. */
-html.scroll-locked { overflow: hidden; padding-right: var(--scrollbar-w, 0px); }
-html.scroll-locked .topbar { padding-right: calc(var(--topbar-pad-x) + var(--scrollbar-w, 0px)); }
-html.scroll-locked .toast-stack { right: calc(16px + var(--scrollbar-w, 0px)); }
+/* Page scroll lock while a modal is open (scrollLock.js): a class on <html>.
+   --scrollbar-w is the width of the scrollbar that disappears: it is added
+   as padding so nothing moves sideways. On phones .admin-scroll is what
+   gets locked (section 8). */
+html.scroll-locked { overflow: hidden; }
+@media (min-width: 992px) {
+  html.scroll-locked { padding-right: var(--scrollbar-w, 0px); }
+  html.scroll-locked .topbar { padding-right: calc(var(--topbar-pad-x) + var(--scrollbar-w, 0px)); }
+  html.scroll-locked .toast-stack { right: calc(16px + var(--scrollbar-w, 0px)); }
+}
 img, svg, video, canvas, iframe, table, pre, select, input, textarea { max-width: 100%; }
 .row > *, .panel, .modal-content { max-width: 100%; min-width: 0; }   /* .modal-dialog keeps Bootstrap's 500px / 800px widths */
 h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
@@ -293,6 +296,8 @@ code { color: var(--code); }
   margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; min-width: 0;
   padding-top: var(--topbar-h);
 }
+/* Page + footer. Computers: part of the page. Phones: scrolls by itself (section 8). */
+.admin-scroll { flex: 1 0 auto; display: flex; flex-direction: column; min-width: 0; }
 /* Top bar: always visible. Starts where the sidebar ends (full width under
    992px). Solid background in both themes, nothing shows through it.
    Only the sidebar (1040), its backdrop (1035), modals (1050/1055) and
@@ -513,7 +518,7 @@ code { color: var(--code); }
 
 .alert-danger-soft { background: var(--bad-bg); border: 1px solid var(--bad-border); color: var(--bad); border-radius: 12px; }
 
-.toast-stack { position: fixed; right: 16px; bottom: 16px; z-index: 1100; display: flex; flex-direction: column; gap: 10px; width: min(360px, calc(100vw - 32px)); }
+.toast-stack { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 1100; display: flex; flex-direction: column; gap: 10px; width: min(360px, calc(100vw - 32px)); }
 .admin-toast {
   display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 14px; font-size: 0.88rem;
   background: var(--panel); color: var(--text); border: 1px solid var(--border); box-shadow: var(--shadow-pop);
@@ -606,6 +611,45 @@ code { color: var(--code); }
   .bar-chart { gap: 6px; height: 200px; }
   .page-title { font-size: 1.15rem; }
   .login-card { padding: 24px 20px; }
+}
+
+/* Phones + tablets (under 992px): app shell ---------------
+   The page itself never scrolls. The top bar is a normal block at the top
+   of the screen and only .admin-scroll (page + footer) scrolls, below it,
+   so page content can never go behind or above the top bar: not when a
+   phone browser's toolbars or status bar sit over the page, not in in-app
+   browsers, and not when iOS bounces at the top or bottom.
+   html.app-shell is set by Layout.jsx (the login page scrolls normally).
+   viewport-fit=cover lets the page reach under the notch / status bar: the
+   top bar's padding-top (env(safe-area-inset-top)) fills it with its solid
+   color. The sidebar stays a slide-in panel. */
+@media (max-width: 991.98px) {
+  html.app-shell, html.app-shell body { height: 100%; overflow: hidden; overscroll-behavior-y: none; }
+  html.app-shell #root, html.app-shell .admin-shell { height: 100%; min-height: 0; }
+  html.app-shell .admin-main { height: 100vh; height: 100dvh; min-height: 0; padding-top: 0; }
+  html.app-shell .topbar {
+    position: relative; inset: auto; flex: 0 0 auto;
+    height: calc(var(--topbar-h) + env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
+    padding-left: max(var(--topbar-pad-x), env(safe-area-inset-left));
+    padding-right: max(var(--topbar-pad-x), env(safe-area-inset-right));
+  }
+  html.app-shell .admin-scroll {
+    flex: 1 1 auto; min-height: 0;
+    overflow-y: auto; overflow-x: clip;
+    -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  html.app-shell .admin-scroll > * { flex-shrink: 0; }
+  html.app-shell.scroll-locked .admin-scroll {
+    overflow-y: hidden;
+    padding-right: calc(env(safe-area-inset-right) + var(--scrollbar-w, 0px));
+  }
+  .sidebar {
+    padding-top: calc(18px + env(safe-area-inset-top));
+    padding-bottom: calc(18px + env(safe-area-inset-bottom));
+  }
+  .login-page { padding-top: calc(24px + env(safe-area-inset-top)); padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

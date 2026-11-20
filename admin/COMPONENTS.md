@@ -102,4 +102,4 @@ const isPhone = useMediaQuery("(max-width: 767.98px)");
 - Course form: every field is stacked under 576px (from 576px, Duration / Price / Seats sit side by side; the other fields stay stacked up to 768px).
 - Under 576px: stat cards put the icon above the number, and modals take the full width.
 - Sidebar: fixed on screens 992px and wider, a slide-in panel below that (menu button in the top bar).
-- Top bar: fixed at the top, `--topbar-h` high (changes at 992 / 768 / 576px); the content starts below it. On desktop it starts where the sidebar ends.
+- Top bar: `--topbar-h` high (changes at 992 / 768 / 576px), plus the notch on phones. On computers it is fixed at the top, starting where the sidebar ends. On phones (under 992px) the page itself never scrolls: the top bar sits at the top of the layout and only `.admin-scroll` (page + footer, in `Layout.jsx`) scrolls below it.
